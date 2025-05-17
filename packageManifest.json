@@ -1,9 +1,9 @@
 {
   "packageName": "Pi-hole Virtual Switch",
   "author": "WalksOnAir",
-  "version": "6.0.0",
+  "version": "6.0.1",
   "minimumHEVersion": "2.1.9",
-  "dateReleased": "2025-02-22",
+  "dateReleased": "2025-05-17",
   "drivers": [
     {
       "id": "21d75ca9-8424-4858-bb91-be7119d85f45",

@@ -40,6 +40,14 @@ To update the driver via HPM:
 2. Select **Update** → **Check for Updates**.
 3. If an update is available, follow the instructions to install.
 
+
+## 🆕 Release Notes
+
+### v6.0.1 - 2025-05-17
+
+- Added calls to `unschedule()` and `unsubscribe()` at the start of `initialize()` to clear existing schedules and subscriptions.
+- Introduced `unschedule("updateBlockingResumeTime")` in `handleOnResponse` to remove stale resume-time schedules when re-enabling blocking.
+
 ## 🏆 Credits
 
 This project is based on the original [Pi-hole Virtual Switch](https://github.com/jedbro/Hubitat-Projects/blob/main/Pi-Hole%20Virtual%20Switch/pi-hole-virtual-switch.groovy) by **Nick Veenstra, cuboy29, harriscd, and [Jed Brown](https://github.com/jedbro)**. 
