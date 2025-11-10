@@ -43,6 +43,12 @@ To update the driver via HPM:
 
 ## 🆕 Release Notes
 
+### v6.0.2 - 2025-11-07
+
+- Fixed an obsolete `unsubscribe()` call that threw errors whenever preferences were saved.
+- Improved the disable-timer workflow so the virtual switch keeps polling every minute while blocking is paused and immediately clears the countdown when Pi-hole resumes blocking (even if that happens outside Hubitat).
+- Added extra status checks to keep `blockingWillResumeAt` and the switch state in sync with Pi-hole’s web UI.
+
 ### v6.0.1 - 2025-05-17
 
 - Added calls to `unschedule()` and `unsubscribe()` at the start of `initialize()` to clear existing schedules and subscriptions.

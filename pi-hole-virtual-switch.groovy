@@ -15,6 +15,7 @@
  *    - 2025.02.21: Updated for Pi-hole v6 API changes, added HPM support (by WalksOnAir)
  *    - 2025.02.22: Updated with user selectable port (by Alan_F)
  *    - 2025.05.17: Removed scheduled checks that are no longer required (WalksOnAir)
+ *    - 2025.11.07: Fix polling when blocking resumes early and clean up obsolete unsubscribe (WalksOnAir)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  You may not use this file except in compliance with the License.
@@ -75,7 +76,6 @@ def updated() {
 
 def initialize() {
     unschedule()
-    unsubscribe()
     if (isDebug == null) isDebug = false
 
     logDebug("Initializing Pi-hole Virtual Switch...")
@@ -206,6 +206,7 @@ def handleOffResponse(hubitat.device.HubResponse response) {
 
 def updateBlockingResumeTime() {
     if (!state.disableEndTime) {
+        unschedule("updateBlockingResumeTime")
         sendEvent(name: "blockingWillResumeAt", value: "N/A")
         return
     }
@@ -217,11 +218,17 @@ def updateBlockingResumeTime() {
         log.info "Checking if Pi-hole re-enabled blocking..."
         poll()
         state.disableEndTime = null
+        unschedule("updateBlockingResumeTime")
         return
     }
 
     def resumeTime = new Date(state.disableEndTime)
     sendEvent(name: "blockingWillResumeAt", value: resumeTime.format("yyyy-MM-dd HH:mm:ss", location.timeZone))
+
+    if (device.currentValue("switch") == "off") {
+        logDebug("Verifying Pi-hole status while countdown is active...")
+        poll()
+    }
 }
 
 def authenticate() {
@@ -329,6 +336,13 @@ def handleStatusResponse(hubitat.device.HubResponse response) {
         if (json?.blocking != null) {
             def switchState = (json.blocking == "enabled") ? "on" : "off"
             sendEvent(name: "switch", value: switchState)
+
+            if (switchState == "on" && state.disableEndTime) {
+                log.info "Blocking resumed before the scheduled timer completed. Clearing countdown."
+                state.disableEndTime = null
+                unschedule("updateBlockingResumeTime")
+                sendEvent(name: "blockingWillResumeAt", value: "N/A")
+            }
 
             if (device.currentValue("serviceStatus") == "Down (Service Unavailable)") {
                 log.warn "Pi-hole service is BACK ONLINE. Re-authenticating..."
